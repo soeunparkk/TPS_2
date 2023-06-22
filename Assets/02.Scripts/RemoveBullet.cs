@@ -24,8 +24,4 @@ public class RemoveBullet : MonoBehaviour
             Destroy(coll.gameObject);
         }
     }
-
 }
-
-
-

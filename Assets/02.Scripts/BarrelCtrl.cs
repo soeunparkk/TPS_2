@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class BarrelCtrl : MonoBehaviour
 {
-
     // 폭발 효과 파티클을 연결할 변수
     public GameObject expEffect;
     // 무작위로 적용할 텍스처 배열

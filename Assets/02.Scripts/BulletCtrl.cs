@@ -8,6 +8,7 @@ public class BulletCtrl : MonoBehaviour
     public float damage = 20.0f;
     // ÃÑ¾Ë ¹ß»ç Èû
     public float force = 1500.0f;
+
     private Rigidbody rb;
     void Start()
     {
@@ -17,4 +18,3 @@ public class BulletCtrl : MonoBehaviour
         rb.AddForce(transform.forward * force);
     }
 }
-

@@ -14,4 +14,3 @@ public class MyGizmos : MonoBehaviour
         Gizmos.DrawSphere(transform.position, _radius);
     }
 }
-
