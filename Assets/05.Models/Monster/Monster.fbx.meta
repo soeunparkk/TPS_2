@@ -485,8 +485,8 @@ ModelImporter:
     animationScaleError: 0.5
     animationWrapMode: 0
     extraExposedTransformPaths:
-    - hip/belly/L_arm/L_elbow/L_wrist
-    - hip/belly/R_arm/R_elbow/R_wrist
+    - R_wristkontrol
+    - L_wristkontrol
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16

@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-// 내비게이션 기능을 사용하기 위해 추가해야 하는 네임스페이스
 using UnityEngine.AI;
+using UnityEngine.Animations;
+
 public class MonsterCtrl : MonoBehaviour
 {
     // 몬스터의 상태 정보
@@ -26,19 +27,17 @@ public class MonsterCtrl : MonoBehaviour
     private Transform playerTr;
     private NavMeshAgent agent;
     private Animator anim;
-
-    // 혈흔 효과 프리팹
     private GameObject bloodEffect;
-
-    // Animator 파라미터의 해시값 추출
     private readonly int hashTrace = Animator.StringToHash("IsTrace");
     private readonly int hashAttack = Animator.StringToHash("IsAttack");
     private readonly int hashHit = Animator.StringToHash("Hit");
-    private readonly int hashDie = Animator.StringToHash("Die"); 
-    private readonly int hashSpeed = Animator.StringToHash("Speed");
     private readonly int hashPlayerDie = Animator.StringToHash("PlayerDie");
-    // 몬스터 생명 변수 변수 추가
+    private readonly int hashSpeed = Animator.StringToHash("Speed");
+    private readonly int hashDie = Animator.StringToHash("Die");
+
+    // 몬스터 생명 변수
     private int hp = 100;
+
 
     // 스크립트가 활성화될 때마다 호출되는 함수
     void OnEnable()
@@ -55,29 +54,22 @@ public class MonsterCtrl : MonoBehaviour
 
     void Start()
     {
-        // Animator 컴포넌트 할당
-        anim = GetComponent<Animator>();
-
         // 몬스터의 Transform 할당
         monsterTr = GetComponent<Transform>();
-
         // 추적 대상인 Player의 Transform 할당
         playerTr = GameObject.FindWithTag("PLAYER").GetComponent<Transform>();
-
         // NavMeshAgent 컴포넌트 할당
         agent = GetComponent<NavMeshAgent>();
-
+        // Animator 컴포넌트 할당
+        anim = GetComponent<Animator>();
         // 추적 대상의 위치를 설정하면 바로 추적 시작
         //agent.destination = playerTr.position;
-
         // 몬스터의 상태를 체크하는 코루틴 함수 호출
         StartCoroutine(CheckMonsterState());
-
         // 상태에 따라 몬스터의 행동을 수행하는 코루틴 함수 호출
         StartCoroutine(MonsterAction());
-
-        // BloodSprayEffect 프리팹 로드
         bloodEffect = Resources.Load<GameObject>("BloodSprayEffect");
+
     }
     // 일정한 간격으로 몬스터의 행동 상태를 체크
     IEnumerator CheckMonsterState()
@@ -164,7 +156,6 @@ public class MonsterCtrl : MonoBehaviour
             Gizmos.DrawWireSphere(transform.position, attackDist);
         }
     }
-
     void OnCollisionEnter(Collision coll)
     {
 
@@ -174,12 +165,6 @@ public class MonsterCtrl : MonoBehaviour
             Destroy(coll.gameObject);
             // 피격 리액션 애니메이션 실행
             anim.SetTrigger(hashHit);
-            // 총알의 충돌 지점
-            Vector3 pos = coll.GetContact(0).point;
-            // 총알의 충돌 지점의 법선 벡터
-            Quaternion rot = Quaternion.LookRotation(-coll.GetContact(0).normal);
-            // 혈흔 효과를 생성하는 함수 호출
-            ShowBloodEffect(pos, rot);
 
             // 몬스터의 hp 차감
             hp -= 10;
@@ -188,6 +173,14 @@ public class MonsterCtrl : MonoBehaviour
                 state = State.DIE;
             }
         }
+
+        // 총알의 충돌 지점
+        Vector3 pos = coll.GetContact(0).point;
+        // 총알의 충돌 지점의 법선 벡터
+        Quaternion rot = Quaternion.LookRotation(-coll.GetContact(0).normal);
+        // 혈흔 효과를 생성하는 함수 호출
+        ShowBloodEffect(pos, rot);
+
     }
     void ShowBloodEffect(Vector3 pos, Quaternion rot)
     {
@@ -205,4 +198,5 @@ public class MonsterCtrl : MonoBehaviour
         anim.SetFloat(hashSpeed, Random.Range(0.8f, 1.2f)); // 스피드를 위해서 추가해야 하는 코드
         anim.SetTrigger(hashPlayerDie);
     }
-}   
+}
+

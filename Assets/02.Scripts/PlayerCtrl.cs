@@ -44,7 +44,9 @@ public class PlayerCtrl : MonoBehaviour
         //HP 초기화
         currHp = initHp;
 
-       
+        // Hpbar 연결
+        hpBar = GameObject.FindGameObjectWithTag("HP_BAR")?.GetComponent<Image>();
+        DisplayHealth();
     }
 
     // Update is called once per frame
@@ -127,7 +129,7 @@ public class PlayerCtrl : MonoBehaviour
         OnPlayerDie();
     }
 
-    void DisplayHealth()
+    void DisplayHealth() 
     {
         hpBar.fillAmount = currHp / initHp;
     }

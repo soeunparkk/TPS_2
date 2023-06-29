@@ -13,4 +13,16 @@ public class MyGizmos : MonoBehaviour
         // 구체 모양의 기즈모 생성. 인자는 (생성 위치, 반지름)
         Gizmos.DrawSphere(transform.position, _radius);
     }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
 }
