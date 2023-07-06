@@ -19,24 +19,28 @@ public class MonsterCtrl : MonoBehaviour
     public float traceDist = 10.0f;
     // 공격 사정거리
     public float attackDist = 2.0f;
-    // 몬스터의 사망 여부                                                                                                                                                                                                               
+    // 몬스터의 사망 여부
     public bool isDie = false;
     // 컴포넌트의 캐시를 처리할 변수
     private Transform monsterTr;
     private Transform playerTr;
     private NavMeshAgent agent;
     private Animator anim;
+
+    // 혈흔 효과 프리팹
+    private GameObject bloodEffect;
+
     // Animator 파라미터의 해시값 추출
     private readonly int hashTrace = Animator.StringToHash("IsTrace");
     private readonly int hashAttack = Animator.StringToHash("IsAttack");
     private readonly int hashHit = Animator.StringToHash("Hit");
-    private readonly int hashPlayerDie = Animator.StringToHash("PlayerDie");
-    private readonly int hashSpeed = Animator.StringToHash("Speed");
     private readonly int hashDie = Animator.StringToHash("Die");
-    // 혈흔 효과 프리팹
-    private GameObject bloodEffect;
-    // 몬스터 생명 변수
+    private readonly int hashSpeed = Animator.StringToHash("Speed");
+    private readonly int hashPlayerDie = Animator.StringToHash("PlayerDie");
+    // 몬스터 생명 변수 변수 추가
     private int hp = 100;
+
+    // 스크립트가 활성화될 때마다 호출되는 함수
     // 스크립트가 활성화될 때마다 호출되는 함수
     void OnEnable()
     {
@@ -53,6 +57,7 @@ public class MonsterCtrl : MonoBehaviour
         // 기존에 연결된 함수 해제
         PlayerCtrl.OnPlayerDie -= this.OnPlayerDie;
     }
+
     void Awake()
     {
         // 몬스터의 Transform 할당
@@ -61,10 +66,33 @@ public class MonsterCtrl : MonoBehaviour
         playerTr = GameObject.FindWithTag("PLAYER").GetComponent<Transform>();
         // NavMeshAgent 컴포넌트 할당
         agent = GetComponent<NavMeshAgent>();
+        // NavMeshAgent의 자동 회전 기능 비활성화
+        agent.updateRotation = false;
         // Animator 컴포넌트 할당
         anim = GetComponent<Animator>();
         // BloodSprayEffect 프리팹 로드
         bloodEffect = Resources.Load<GameObject>("BloodSprayEffect");
+    }
+
+    void Update()
+    {
+        // 목적지까지 남은 거리로 회전 여부 판단
+        if (agent.remainingDistance >= 2.0f)
+        {
+            // 에이전트의 이동 방향
+            Vector3 direction = agent.desiredVelocity;
+            if (direction.sqrMagnitude >= 0.1f * 0.1f)
+            {
+                // 회전 각도(쿼터니언) 산출
+                Quaternion rot = Quaternion.LookRotation(direction);
+                // 구면 선형보간 함수로 부드러운 회전 처리
+                monsterTr.rotation = Quaternion.Slerp(monsterTr.rotation,
+
+                rot,
+                Time.deltaTime * 10.0f);
+
+            }
+        }
     }
     // 일정한 간격으로 몬스터의 행동 상태를 체크
     IEnumerator CheckMonsterState()
@@ -160,49 +188,48 @@ public class MonsterCtrl : MonoBehaviour
             Gizmos.DrawWireSphere(transform.position, attackDist);
         }
     }
+
     void OnCollisionEnter(Collision coll)
     {
         if (coll.collider.CompareTag("BULLET"))
         {
             // 충돌한 총알을 삭제
             Destroy(coll.gameObject);
-            // 피격 리액션 애니메이션 실행
-            anim.SetTrigger(hashHit);
-            // 총알의 충돌 지점
-            Vector3 pos = coll.GetContact(0).point;
-            // 총알의 충돌 지점의 법선 벡터
-            Quaternion rot = Quaternion.LookRotation(-coll.GetContact(0).normal);
-            // 혈흔 효과를 생성하는 함수 호출
-            ShowBloodEffect(pos, rot);
-            // 몬스터의 hp 차감
-            hp -= 10;
-            if (hp <= 0)
-            {
-                state = State.DIE;
-                //몬스터가 사망했을 때 50점을 추가
-                GameManager.instance.DisplayScore(50);
-            }
         }
     }
-    // 자기 자신 충돌 감지를 위해서 추가
-    void OnTriggerEnter(Collider coll)
+
+    // 레이캐스트를 사용해 데미지를 입히는 로직
+    public void OnDamage(Vector3 pos, Vector3 normal)
     {
-        Debug.Log(coll.gameObject.name);
+        // 피격 리액션 애니메이션 실행
+        anim.SetTrigger(hashHit);
+        Quaternion rot = Quaternion.LookRotation(normal);
+        // 혈흔 효과를 생성하는 함수 호출
+        ShowBloodEffect(pos, rot);
+        // 몬스터의 hp 차감
+        hp -= 30;
+        if (hp <= 0)
+        {
+            state = State.DIE;
+            // 몬스터가 사망했을 때 50점을 추가
+            GameManager.instance.DisplayScore(50);
+        }
     }
+
     void ShowBloodEffect(Vector3 pos, Quaternion rot)
     {
         // 혈흔 효과 생성
         GameObject blood = Instantiate<GameObject>(bloodEffect, pos, rot, monsterTr);
         Destroy(blood, 1.0f);
     }
+
     void OnPlayerDie()
     {
         // 몬스터의 상태를 체크하는 코루틴 함수를 모두 정지시킴
         StopAllCoroutines();
         // 추적을 정지하고 애니메이션을 수행
         agent.isStopped = true;
-        // 스피드를 위해서 추가해야 하는 코드
-        anim.SetFloat(hashSpeed, Random.Range(0.8f, 1.2f));
+        anim.SetFloat(hashSpeed, Random.Range(0.8f, 1.2f)); // 스피드를 위해서 추가해야 하는 코드
         anim.SetTrigger(hashPlayerDie);
     }
 }
