@@ -1,8 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI; // Unity-UI를 사용하기 위해 선언한 네임스페이스
 using UnityEngine.Events; // UnityEvent 관련 API를 사용하기 위해 선언한 네임스페이스
+
 
 public class UIManager : MonoBehaviour
 {
@@ -24,5 +24,10 @@ public class UIManager : MonoBehaviour
     public void OnButtonClick(string msg)
     {
         Debug.Log($"Click Button : {msg}");
+    }
+    public void OnStartClick()
+    {
+        SceneManager.LoadScene("Level_01");
+        SceneManager.LoadScene("Play", LoadSceneMode.Additive);
     }
 }
